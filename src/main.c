@@ -1,5 +1,6 @@
 #include "base_defs.h"
 #include <SDL2/SDL.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -12,6 +13,7 @@ void update();
 void render_map();
 void render_player();
 void move_player(float delta_time);
+bool has_wall_at(float x, float y);
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -106,8 +108,17 @@ void setup() {
     player.turn_direction = 0;
     player.walk_direction = 0;
     player.rotation_angle = PI / 2;
-    player.walk_speed = 50;
+    player.walk_speed = 100;
     player.turn_speed = 45 * (PI / 180);
+}
+
+bool has_wall_at(float x, float y) {
+    int map_x = floor(x / TILE_SIZE);
+    int map_y = floor(y / TILE_SIZE);
+
+    if (map_x < 0 || map_x >= MAP_NUM_COLS) return true;
+    if (map_y < 0 || map_y >= MAP_NUM_ROWS) return true;
+    return map[map_y][map_x] == 1;
 }
 
 void move_player(float delta_time) {
@@ -119,11 +130,13 @@ void move_player(float delta_time) {
     float new_player_x = player.x + cos(player.rotation_angle) * move_step;
     float new_player_y = player.y + sin(player.rotation_angle) * move_step;
 
-    // TODO:
-    // Check for wall collision before updating the player position
+    if (!has_wall_at(new_player_x, player.y)) {
+        player.x = new_player_x;
+    }
 
-    player.x = new_player_x;
-    player.y = new_player_y;
+    if (!has_wall_at(player.x, new_player_y)) {
+        player.y = new_player_y;
+    }
 }
 
 void render_player() {
