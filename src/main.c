@@ -7,14 +7,16 @@ bool initialize_window();
 void destroy_window();
 void setup();
 void render();
-void processInput();
+void process_input();
 void update();
-void renderMap();
+void render_map();
+void render_player();
+void move_player(float delta_time);
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
-bool isGameRunning = false;
-int ticksLastFrame = 0;
+bool is_game_running = false;
+int ticks_last_frame = 0;
 
 const int map[MAP_NUM_ROWS][MAP_NUM_COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -37,19 +39,19 @@ struct Player {
     float y;
     float width;
     float height;
-    int turnDirection; // -1 for left, +1 for right
-    int walkDirection; // -1 for back, +1 for front
-    float rotationAngle;
-    float walkSpeed;
-    float turnSpeed;
+    int turn_direction; // -1 for left, +1 for right
+    int walk_direction; // -1 for back, +1 for front
+    float rotation_angle;
+    float walk_speed;
+    float turn_speed;
 } player;
 
 int main() {
-    isGameRunning = initialize_window();
+    is_game_running = initialize_window();
 
     setup();
-    while (isGameRunning) {
-        processInput();
+    while (is_game_running) {
+        process_input();
         update();
         render();
     }
@@ -99,68 +101,147 @@ void destroy_window() {
 void setup() {
     player.x = WINDOW_WIDTH / 2.0;
     player.y = WINDOW_HEIGHT / 2.0;
-    player.width = 5;
-    player.height = 5;
-    player.turnDirection = 0;
-    player.walkDirection = 0;
-    player.rotationAngle = PI / 2;
-    player.walkSpeed = 100;
-    player.turnSpeed = 45 * (PI / 180);
+    player.width = 1;
+    player.height = 1;
+    player.turn_direction = 0;
+    player.walk_direction = 0;
+    player.rotation_angle = PI / 2;
+    player.walk_speed = 50;
+    player.turn_speed = 45 * (PI / 180);
 }
 
-void renderMap() {
+void move_player(float delta_time) {
+    player.rotation_angle +=
+        player.turn_direction * player.turn_speed * delta_time;
+
+    float move_step = player.walk_direction * player.walk_speed * delta_time;
+
+    float new_player_x = player.x + cos(player.rotation_angle) * move_step;
+    float new_player_y = player.y + sin(player.rotation_angle) * move_step;
+
+    // TODO:
+    // Check for wall collision before updating the player position
+
+    player.x = new_player_x;
+    player.y = new_player_y;
+}
+
+void render_player() {
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_Rect player_rect = {
+        MINIMAP_SCALE_FACTOR * player.x,
+        MINIMAP_SCALE_FACTOR * player.y,
+        MINIMAP_SCALE_FACTOR * player.width,
+        MINIMAP_SCALE_FACTOR * player.height
+    };
+
+    SDL_RenderFillRect(renderer, &player_rect);
+
+    SDL_RenderDrawLine(
+        renderer,
+        MINIMAP_SCALE_FACTOR * player.x,
+        MINIMAP_SCALE_FACTOR * player.y,
+        MINIMAP_SCALE_FACTOR * player.x + cos(player.rotation_angle) * 40,
+        MINIMAP_SCALE_FACTOR * player.y + sin(player.rotation_angle) * 40
+    );
+}
+
+void render_map() {
     for (int i = 0; i < MAP_NUM_ROWS; i++) {
         for (int j = 0; j < MAP_NUM_COLS; j++) {
-            int tileX = j * TILE_SIZE;
-            int tileY = i * TILE_SIZE;
-            int tileColor = map[i][j] == 1 ? 255 : 0;
+            int tile_x = j * TILE_SIZE;
+            int tile_y = i * TILE_SIZE;
+            int tile_color = map[i][j] == 1 ? 255 : 0;
             SDL_SetRenderDrawColor(
                 renderer,
-                tileColor,
-                tileColor,
-                tileColor,
+                tile_color,
+                tile_color,
+                tile_color,
                 255
             );
-            SDL_Rect mapTileRect = {
-                MINIMAP_SCALE_FACTOR * tileX,
-                MINIMAP_SCALE_FACTOR * tileY,
+            SDL_Rect map_tile_rect = {
+                MINIMAP_SCALE_FACTOR * tile_x,
+                MINIMAP_SCALE_FACTOR * tile_y,
                 MINIMAP_SCALE_FACTOR * TILE_SIZE,
                 MINIMAP_SCALE_FACTOR * TILE_SIZE
             };
-            SDL_RenderFillRect(renderer, &mapTileRect);
+            SDL_RenderFillRect(renderer, &map_tile_rect);
         }
     }
 }
 
-void processInput() {
+void process_input() {
     SDL_Event event;
     SDL_PollEvent(&event);
 
     switch (event.type) {
     case SDL_QUIT:
-        isGameRunning = false;
+        is_game_running = false;
         break;
+
     case SDL_KEYDOWN:
-        if (event.key.keysym.sym == SDLK_ESCAPE) {
-            isGameRunning = false;
+        switch (event.key.keysym.sym) {
+
+        case SDLK_ESCAPE:
+            is_game_running = false;
+            break;
+
+        case SDLK_UP:
+            player.walk_direction = +1;
+            break;
+
+        case SDLK_DOWN:
+            player.walk_direction = -1;
+            break;
+
+        case SDLK_RIGHT:
+            player.turn_direction = +1;
+            break;
+
+        case SDLK_LEFT:
+            player.turn_direction = -1;
+            break;
         }
+
+        break;
+
+    case SDL_KEYUP:
+        switch (event.key.keysym.sym) {
+
+        case SDLK_UP:
+            player.walk_direction = 0;
+            break;
+
+        case SDLK_DOWN:
+            player.walk_direction = 0;
+            break;
+
+        case SDLK_RIGHT:
+            player.turn_direction = 0;
+            break;
+
+        case SDLK_LEFT:
+            player.turn_direction = 0;
+            break;
+        }
+
         break;
     }
 }
 
 void update() {
     // waste some time until we reach the target frame time length
-    int timeToWait = FRAME_TIME_LENGHT - (SDL_GetTicks() - ticksLastFrame);
+    int time_to_wait = FRAME_TIME_LENGHT - (SDL_GetTicks() - ticks_last_frame);
 
-    if (timeToWait > 0 && timeToWait <= FRAME_TIME_LENGHT) {
-        SDL_Delay(timeToWait);
+    if (time_to_wait > 0 && time_to_wait <= FRAME_TIME_LENGHT) {
+        SDL_Delay(time_to_wait);
     }
 
-    float deltaTime = (SDL_GetTicks() - ticksLastFrame) / 1000.0f;
+    float delta_time = (SDL_GetTicks() - ticks_last_frame) / 1000.0f;
 
-    ticksLastFrame = SDL_GetTicks();
+    ticks_last_frame = SDL_GetTicks();
 
-    // TODO: Remember to update game objects as a function of deltaTime
+    move_player(delta_time);
 }
 
 void render() {
@@ -170,8 +251,8 @@ void render() {
     // TODO:
     // Render game objects here
 
-    renderMap();
-    // TODO: renderPlayer()
+    render_map();
+    render_player();
 
     SDL_RenderPresent(renderer);
 }
