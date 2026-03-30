@@ -11,13 +11,6 @@ void setup();
 void render();
 void process_input();
 void update();
-void render_map();
-void render_player();
-void move_player(float delta_time);
-bool has_wall_at(float x, float y);
-void cast_all_rays();
-void cast_ray(int strip, float ray_angle);
-float normalize_angle(float angle);
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -64,6 +57,9 @@ struct Ray {
     bool is_ray_facing_right;
     int wall_hit_content;
 } rays[NUM_RAYS];
+
+u32 *color_buffer;
+SDL_Texture *color_buffer_texture;
 
 int main() {
     is_game_running = initialize_window();
@@ -112,6 +108,8 @@ bool initialize_window() {
 }
 
 void destroy_window() {
+    free(color_buffer);
+    SDL_DestroyTexture(color_buffer_texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
@@ -125,8 +123,19 @@ void setup() {
     player.turn_direction = 0;
     player.walk_direction = 0;
     player.rotation_angle = PI / 2;
-    player.walk_speed = 100;
-    player.turn_speed = 45 * (PI / 180);
+    player.walk_speed = 150;
+    player.turn_speed = 75 * (PI / 180);
+
+    color_buffer =
+        (u32 *)malloc(sizeof(u32) * (u32)WINDOW_WIDTH * (u32)WINDOW_HEIGHT);
+
+    color_buffer_texture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT
+    );
 }
 
 bool has_wall_at(float x, float y) {
@@ -372,6 +381,31 @@ void render_rays() {
     }
 }
 
+void render_color_buffer() {
+    SDL_UpdateTexture(
+        color_buffer_texture,
+        NULL,
+        color_buffer,
+        (int)((u32)WINDOW_WIDTH * sizeof(u32))
+    );
+
+    SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
+}
+
+void clear_color_buffer(u32 color) {
+    for (int x = 0; x < WINDOW_WIDTH; x++) {
+        for (int y = 0; y < WINDOW_HEIGHT; y++) {
+            int idx = (y * WINDOW_WIDTH) + x;
+
+            if (x == y) {
+                color_buffer[idx] = color;
+            } else {
+                color_buffer[idx] = 0xFFFF0000;
+            }
+        }
+    }
+}
+
 void process_input() {
     SDL_Event event;
     SDL_PollEvent(&event);
@@ -449,6 +483,10 @@ void render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    render_color_buffer();
+    clear_color_buffer(0xFF00EE30);
+
+    // display the minimap
     render_map();
     render_rays();
     render_player();
