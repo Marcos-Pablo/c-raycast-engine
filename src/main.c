@@ -123,8 +123,8 @@ void setup() {
     player.turn_direction = 0;
     player.walk_direction = 0;
     player.rotation_angle = PI / 2;
-    player.walk_speed = 150;
-    player.turn_speed = 75 * (PI / 180);
+    player.walk_speed = 100;
+    player.turn_speed = 45 * (PI / 180);
 
     color_buffer =
         (u32 *)malloc(sizeof(u32) * (u32)WINDOW_WIDTH * (u32)WINDOW_HEIGHT);
@@ -397,11 +397,34 @@ void clear_color_buffer(u32 color) {
         for (int y = 0; y < WINDOW_HEIGHT; y++) {
             int idx = (y * WINDOW_WIDTH) + x;
 
-            if (x == y) {
-                color_buffer[idx] = color;
-            } else {
-                color_buffer[idx] = 0xFFFF0000;
-            }
+            color_buffer[idx] = color;
+        }
+    }
+}
+
+void generate_3D_projection() {
+    for (int i = 0; i < NUM_RAYS; i++) {
+        float perpendicular_distance =
+            rays[i].distance * cos(rays[i].ray_angle - player.rotation_angle);
+
+        float dist_proj_plane = ((float)WINDOW_WIDTH / 2) / tan(FOV_ANGLE);
+
+        float projected_wall_height =
+            (TILE_SIZE / perpendicular_distance) * dist_proj_plane;
+
+        int wall_strip_height = (int)projected_wall_height;
+        int wall_top_pixel = (WINDOW_HEIGHT / 2) - (wall_strip_height / 2);
+        wall_top_pixel = wall_top_pixel < 0 ? 0 : wall_top_pixel;
+
+        int wall_bottom_pixel = (WINDOW_HEIGHT / 2) + (wall_strip_height / 2);
+        wall_bottom_pixel = wall_bottom_pixel > WINDOW_HEIGHT
+                                ? WINDOW_HEIGHT
+                                : wall_bottom_pixel;
+
+        for (int y = wall_top_pixel; y < wall_bottom_pixel; y++) {
+            int idx = (y * WINDOW_WIDTH) + i;
+            color_buffer[idx] =
+                rays[i].was_hit_vertical ? 0xFFFFFFFF : 0xFFCCCCCC;
         }
     }
 }
@@ -483,8 +506,10 @@ void render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    generate_3D_projection();
+
     render_color_buffer();
-    clear_color_buffer(0xFF00EE30);
+    clear_color_buffer(0xFF000000);
 
     // display the minimap
     render_map();
