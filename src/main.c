@@ -16,6 +16,9 @@ SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 bool is_game_running = false;
 int ticks_last_frame = 0;
+SDL_Texture *color_buffer_texture;
+u32 *color_buffer = NULL;
+u32 *wall_texture = NULL;
 
 const int map[MAP_NUM_ROWS][MAP_NUM_COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -57,9 +60,6 @@ struct Ray {
     bool is_ray_facing_right;
     int wall_hit_content;
 } rays[NUM_RAYS];
-
-u32 *color_buffer;
-SDL_Texture *color_buffer_texture;
 
 int main() {
     is_game_running = initialize_window();
@@ -128,6 +128,21 @@ void setup() {
 
     color_buffer =
         (u32 *)malloc(sizeof(u32) * (u32)WINDOW_WIDTH * (u32)WINDOW_HEIGHT);
+
+    // Create a texture with a pattern of blue and black lines
+    wall_texture =
+        (u32 *)malloc(sizeof(u32) * (u32)TEXTURE_WIDTH * (u32)TEXTURE_HEIGHT);
+
+    for (int x = 0; x < TEXTURE_WIDTH; x++) {
+        for (int y = 0; y < TEXTURE_HEIGHT; y++) {
+            int idx = (y * TEXTURE_WIDTH) + x;
+            if (x % 8 && y % 8) {
+                wall_texture[idx] = 0xFF0000FF;
+                continue;
+            }
+            wall_texture[idx] = 0xFF000000;
+        }
+    }
 
     color_buffer_texture = SDL_CreateTexture(
         renderer,
@@ -421,10 +436,37 @@ void generate_3D_projection() {
                                 ? WINDOW_HEIGHT
                                 : wall_bottom_pixel;
 
-        for (int y = wall_top_pixel; y < wall_bottom_pixel; y++) {
+        for (int y = 0; y < wall_top_pixel; y++) {
             int idx = (y * WINDOW_WIDTH) + i;
-            color_buffer[idx] =
-                rays[i].was_hit_vertical ? 0xFFFFFFFF : 0xFFCCCCCC;
+            color_buffer[idx] = 0xFF333333;
+        }
+
+        int texture_offset_x;
+
+        if (rays[i].was_hit_vertical) {
+            texture_offset_x = (int)rays[i].wall_hit_y % TILE_SIZE;
+        } else {
+            texture_offset_x = (int)rays[i].wall_hit_x % TILE_SIZE;
+        }
+
+        for (int y = wall_top_pixel; y < wall_bottom_pixel; y++) {
+            int distance_from_top =
+                y + (wall_strip_height / 2) - (WINDOW_HEIGHT / 2);
+
+            int texture_offset_y =
+                distance_from_top * ((float)TEXTURE_HEIGHT / wall_strip_height);
+
+            u32 texel_color = wall_texture
+                [(TEXTURE_WIDTH * texture_offset_y) + texture_offset_x];
+
+            // Set the color of the wall based on the color from the texture
+            int idx = (y * WINDOW_WIDTH) + i;
+            color_buffer[idx] = texel_color;
+        }
+
+        for (int y = wall_bottom_pixel; y < WINDOW_HEIGHT; y++) {
+            int idx = (y * WINDOW_WIDTH) + i;
+            color_buffer[idx] = 0xFF777777;
         }
     }
 }
