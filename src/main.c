@@ -20,7 +20,6 @@ int ticks_last_frame = 0;
 
 SDL_Texture *color_buffer_texture;
 u32 *color_buffer = NULL;
-u32 *textures[NUM_TEXTURES];
 
 const int map[MAP_NUM_ROWS][MAP_NUM_COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -33,7 +32,7 @@ const int map[MAP_NUM_ROWS][MAP_NUM_COLS] = {
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5}
 };
@@ -115,6 +114,7 @@ void destroy_window() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    free_wall_textures();
 }
 
 void setup() {
@@ -131,19 +131,12 @@ void setup() {
     color_buffer =
         (u32 *)malloc(sizeof(u32) * (u32)WINDOW_WIDTH * (u32)WINDOW_HEIGHT);
 
-    // Load wall textures
-    textures[0] = (u32 *)REDBRICK_TEXTURE;
-    textures[1] = (u32 *)PURPLESTONE_TEXTURE;
-    textures[2] = (u32 *)MOSSYSTONE_TEXTURE;
-    textures[3] = (u32 *)GRAYSTONE_TEXTURE;
-    textures[4] = (u32 *)COLORSTONE_TEXTURE;
-    textures[5] = (u32 *)BLUESTONE_TEXTURE;
-    textures[6] = (u32 *)WOOD_TEXTURE;
-    textures[7] = (u32 *)EAGLE_TEXTURE;
+    // Asks uPGN library to decode all PNG files and loads the wall textures array
+    load_wall_textures();
 
     color_buffer_texture = SDL_CreateTexture(
         renderer,
-        SDL_PIXELFORMAT_ARGB8888,
+        SDL_PIXELFORMAT_RGBA32,
         SDL_TEXTUREACCESS_STREAMING,
         WINDOW_WIDTH,
         WINDOW_HEIGHT
@@ -456,8 +449,8 @@ void generate_3D_projection() {
                 distance_from_top * ((float)TEXTURE_HEIGHT / wall_strip_height);
 
             u32 texel_color =
-                textures[tex_num]
-                        [(TEXTURE_WIDTH * texture_offset_y) + texture_offset_x];
+                wall_textures[tex_num].texture_buffer
+                    [(TEXTURE_WIDTH * texture_offset_y) + texture_offset_x];
 
             // Set the color of the wall based on the color from the texture
             int idx = (y * WINDOW_WIDTH) + i;
