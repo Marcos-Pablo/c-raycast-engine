@@ -19,9 +19,6 @@
 #define FPS 30
 #define FRAME_TIME_LENGHT (1000 / FPS)
 
-#define TEXTURE_WIDTH 64
-#define TEXTURE_HEIGHT 64
-
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;

@@ -440,17 +440,19 @@ void generate_3D_projection() {
         }
 
         int tex_num = rays[i].wall_hit_content - 1;
+        int texture_with = wall_textures[tex_num].width;
+        int texture_height = wall_textures[tex_num].height;
 
         for (int y = wall_top_pixel; y < wall_bottom_pixel; y++) {
             int distance_from_top =
                 y + (wall_strip_height / 2) - (WINDOW_HEIGHT / 2);
 
             int texture_offset_y =
-                distance_from_top * ((float)TEXTURE_HEIGHT / wall_strip_height);
+                distance_from_top * ((float)texture_with / wall_strip_height);
 
             u32 texel_color =
                 wall_textures[tex_num].texture_buffer
-                    [(TEXTURE_WIDTH * texture_offset_y) + texture_offset_x];
+                    [(texture_height * texture_offset_y) + texture_offset_x];
 
             // Set the color of the wall based on the color from the texture
             int idx = (y * WINDOW_WIDTH) + i;
