@@ -342,11 +342,10 @@ void cast_ray(int strip_id, float ray_angle) {
 }
 
 void cast_all_rays() {
-    float ray_angle = player.rotation_angle - (FOV_ANGLE / 2);
-
-    for (int strip_id = 0; strip_id < NUM_RAYS; strip_id++) {
-        cast_ray(strip_id, ray_angle);
-        ray_angle += FOV_ANGLE / NUM_RAYS;
+    for (int col = 0; col < NUM_RAYS; col++) {
+        float ray_angle = player.rotation_angle +
+                          atan((col - NUM_RAYS / 2) / DIST_PROJ_PLANE);
+        cast_ray(col, ray_angle);
     }
 }
 
@@ -412,10 +411,8 @@ void generate_3D_projection() {
         float perpendicular_distance =
             rays[i].distance * cos(rays[i].ray_angle - player.rotation_angle);
 
-        float dist_proj_plane = ((float)WINDOW_WIDTH / 2) / tan(FOV_ANGLE / 2);
-
         float projected_wall_height =
-            (TILE_SIZE / perpendicular_distance) * dist_proj_plane;
+            (TILE_SIZE / perpendicular_distance) * DIST_PROJ_PLANE;
 
         int wall_strip_height = (int)projected_wall_height;
         int wall_top_pixel = (WINDOW_HEIGHT / 2) - (wall_strip_height / 2);

@@ -1,3 +1,7 @@
+#ifndef BASE_DEFS_H
+#define BASE_DEFS_H
+
+#include <math.h>
 #include <stdint.h>
 
 #define PI 3.14159265
@@ -16,6 +20,8 @@
 #define FOV_ANGLE (60 * (PI / 180))
 #define NUM_RAYS WINDOW_WIDTH
 
+#define DIST_PROJ_PLANE ((WINDOW_WIDTH / 2) / tan(FOV_ANGLE / 2))
+
 #define FPS 30
 #define FRAME_TIME_LENGHT (1000 / FPS)
 
@@ -28,3 +34,5 @@ typedef int8_t i8;
 typedef int16_t i16;
 typedef int32_t i32;
 typedef int64_t i64;
+
+#endif
