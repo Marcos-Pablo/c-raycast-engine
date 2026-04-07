@@ -16,4 +16,6 @@ texture_t wall_textures[NUM_TEXTURES];
 void load_wall_textures();
 void free_wall_textures();
 
+void change_color_intensity(color_t* color, float factor);
+
 #endif

@@ -45,6 +45,11 @@ void render_wall_projection(void) {
                 wall_textures[tex_num].texture_buffer
                     [(texture_height * texture_offset_y) + texture_offset_x];
 
+            // Make the pixels of the wall that were hit vertically darker to create a shadow effect
+            if (rays[x].was_hit_vertical) {
+                change_color_intensity(&texel_color, 0.7);
+            }
+
             // Set the color of the wall based on the color from the texture
             draw_pixel(x, y, texel_color);
         }
