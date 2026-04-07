@@ -26,7 +26,8 @@ void load_wall_textures() {
                 wall_textures[i].upng_texture = upng;
                 wall_textures[i].width = upng_get_width(upng);
                 wall_textures[i].height = upng_get_height(upng);
-                wall_textures[i].texture_buffer = (u32*)upng_get_buffer(upng);
+                wall_textures[i].texture_buffer =
+                    (color_t*)upng_get_buffer(upng);
             }
         }
     }

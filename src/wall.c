@@ -41,7 +41,7 @@ void render_wall_projection(void) {
             int texture_offset_y =
                 distance_from_top * ((float)texture_with / wall_strip_height);
 
-            u32 texel_color =
+            color_t texel_color =
                 wall_textures[tex_num].texture_buffer
                     [(texture_height * texture_offset_y) + texture_offset_x];
 

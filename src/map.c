@@ -30,7 +30,7 @@ void render_map() {
         for (int j = 0; j < MAP_NUM_COLS; j++) {
             int tile_x = j * TILE_SIZE;
             int tile_y = i * TILE_SIZE;
-            u32 tile_color = map[i][j] != 0 ? 0xFFFFFFFF : 0x00000000;
+            color_t tile_color = map[i][j] != 0 ? 0xFFFFFFFF : 0x00000000;
 
             draw_rect(
                 MINIMAP_SCALE_FACTOR * tile_x,

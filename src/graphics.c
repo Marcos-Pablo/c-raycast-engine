@@ -5,7 +5,7 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *color_buffer_texture;
-static u32 *color_buffer = NULL;
+static color_t *color_buffer = NULL;
 
 bool initialize_window(void) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -41,8 +41,9 @@ bool initialize_window(void) {
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    color_buffer =
-        (u32 *)malloc(sizeof(u32) * (u32)WINDOW_WIDTH * (u32)WINDOW_HEIGHT);
+    color_buffer = (color_t *)malloc(
+        sizeof(color_t) * (color_t)WINDOW_WIDTH * (color_t)WINDOW_HEIGHT
+    );
 
     color_buffer_texture = SDL_CreateTexture(
         renderer,
@@ -63,7 +64,7 @@ void destroy_window(void) {
     SDL_Quit();
 }
 
-void clear_color_buffer(u32 color) {
+void clear_color_buffer(color_t color) {
     for (int i = 0; i < WINDOW_WIDTH * WINDOW_HEIGHT; i++) {
         color_buffer[i] = color;
     }
@@ -74,20 +75,20 @@ void render_color_buffer(void) {
         color_buffer_texture,
         NULL,
         color_buffer,
-        (int)((u32)WINDOW_WIDTH * sizeof(u32))
+        (int)((color_t)WINDOW_WIDTH * sizeof(color_t))
     );
 
     SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
     SDL_RenderPresent(renderer);
 }
 
-void draw_pixel(int x, int y, u32 color) {
+void draw_pixel(int x, int y, color_t color) {
     if (x >= 0 && x < WINDOW_WIDTH && y >= 0 && y < WINDOW_HEIGHT) {
         color_buffer[(y * WINDOW_WIDTH) + x] = color;
     }
 }
 
-void draw_rect(int x, int y, int width, int height, u32 color) {
+void draw_rect(int x, int y, int width, int height, color_t color) {
     if (x < 0 || x > WINDOW_WIDTH) return;
     if (y < 0 || y > WINDOW_HEIGHT) return;
 
@@ -106,7 +107,7 @@ void draw_rect(int x, int y, int width, int height, u32 color) {
     }
 }
 
-void draw_line(int x1, int y1, int x2, int y2, u32 color) {
+void draw_line(int x1, int y1, int x2, int y2, color_t color) {
     int delta_x = x2 - x1;
     int delta_y = y2 - y1;
 
