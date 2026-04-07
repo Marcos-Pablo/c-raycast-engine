@@ -55,10 +55,6 @@ struct Ray {
     float wall_hit_y;
     float distance;
     bool was_hit_vertical;
-    bool is_ray_facing_up;
-    bool is_ray_facing_down;
-    bool is_ray_facing_left;
-    bool is_ray_facing_right;
     int wall_hit_content;
 } rays[NUM_RAYS];
 
@@ -82,12 +78,17 @@ bool initialize_window() {
         return false;
     }
 
+    SDL_DisplayMode display_mode;
+    SDL_GetCurrentDisplayMode(0, &display_mode);
+    int full_screen_width = display_mode.w;
+    int full_screen_height = display_mode.h;
+
     window = SDL_CreateWindow(
         NULL,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        WINDOW_WIDTH,
-        WINDOW_HEIGHT,
+        full_screen_width,
+        full_screen_height,
         SDL_WINDOW_BORDERLESS
     );
 
@@ -243,8 +244,10 @@ void cast_ray(int strip_id, float ray_angle) {
     float next_horz_touch_y = yintercept;
 
     // Increment x_step and y_step until we find a wall
-    while (next_horz_touch_x >= 0 && next_horz_touch_x <= WINDOW_WIDTH &&
-           next_horz_touch_y >= 0 && next_horz_touch_y <= WINDOW_HEIGHT) {
+    while (next_horz_touch_x >= 0 &&
+           next_horz_touch_x <= MAP_NUM_COLS * TILE_SIZE &&
+           next_horz_touch_y >= 0 &&
+           next_horz_touch_y <= MAP_NUM_ROWS * TILE_SIZE) {
         float x_to_check = next_horz_touch_x;
         float y_to_check = next_horz_touch_y + (is_ray_facing_up ? -1 : 0);
 
@@ -288,8 +291,10 @@ void cast_ray(int strip_id, float ray_angle) {
     float next_vert_touch_y = yintercept;
 
     // Increment x_step and y_step until we find a wall
-    while (next_vert_touch_x >= 0 && next_vert_touch_x <= WINDOW_WIDTH &&
-           next_vert_touch_y >= 0 && next_vert_touch_y <= WINDOW_HEIGHT) {
+    while (next_vert_touch_x >= 0 &&
+           next_vert_touch_x <= MAP_NUM_COLS * TILE_SIZE &&
+           next_vert_touch_y >= 0 &&
+           next_vert_touch_y <= MAP_NUM_ROWS * TILE_SIZE) {
         float x_to_check = next_vert_touch_x + (is_ray_facing_left ? -1 : 0);
         float y_to_check = next_vert_touch_y;
 
@@ -335,10 +340,6 @@ void cast_ray(int strip_id, float ray_angle) {
     }
 
     rays[strip_id].ray_angle = ray_angle;
-    rays[strip_id].is_ray_facing_down = is_ray_facing_down;
-    rays[strip_id].is_ray_facing_up = is_ray_facing_up;
-    rays[strip_id].is_ray_facing_left = is_ray_facing_left;
-    rays[strip_id].is_ray_facing_right = is_ray_facing_right;
 }
 
 void cast_all_rays() {
@@ -397,19 +398,15 @@ void render_color_buffer() {
 }
 
 void clear_color_buffer(u32 color) {
-    for (int x = 0; x < WINDOW_WIDTH; x++) {
-        for (int y = 0; y < WINDOW_HEIGHT; y++) {
-            int idx = (y * WINDOW_WIDTH) + x;
-
-            color_buffer[idx] = color;
-        }
+    for (int i = 0; i < WINDOW_WIDTH * WINDOW_HEIGHT; i++) {
+        color_buffer[i] = color;
     }
 }
 
 void generate_3D_projection() {
-    for (int i = 0; i < NUM_RAYS; i++) {
+    for (int x = 0; x < NUM_RAYS; x++) {
         float perpendicular_distance =
-            rays[i].distance * cos(rays[i].ray_angle - player.rotation_angle);
+            rays[x].distance * cos(rays[x].ray_angle - player.rotation_angle);
 
         float projected_wall_height =
             (TILE_SIZE / perpendicular_distance) * DIST_PROJ_PLANE;
@@ -424,19 +421,19 @@ void generate_3D_projection() {
                                 : wall_bottom_pixel;
 
         for (int y = 0; y < wall_top_pixel; y++) {
-            int idx = (y * WINDOW_WIDTH) + i;
+            int idx = (y * WINDOW_WIDTH) + x;
             color_buffer[idx] = 0xFF333333;
         }
 
         int texture_offset_x;
 
-        if (rays[i].was_hit_vertical) {
-            texture_offset_x = (int)rays[i].wall_hit_y % TILE_SIZE;
+        if (rays[x].was_hit_vertical) {
+            texture_offset_x = (int)rays[x].wall_hit_y % TILE_SIZE;
         } else {
-            texture_offset_x = (int)rays[i].wall_hit_x % TILE_SIZE;
+            texture_offset_x = (int)rays[x].wall_hit_x % TILE_SIZE;
         }
 
-        int tex_num = rays[i].wall_hit_content - 1;
+        int tex_num = rays[x].wall_hit_content - 1;
         int texture_with = wall_textures[tex_num].width;
         int texture_height = wall_textures[tex_num].height;
 
@@ -452,12 +449,12 @@ void generate_3D_projection() {
                     [(texture_height * texture_offset_y) + texture_offset_x];
 
             // Set the color of the wall based on the color from the texture
-            int idx = (y * WINDOW_WIDTH) + i;
+            int idx = (y * WINDOW_WIDTH) + x;
             color_buffer[idx] = texel_color;
         }
 
         for (int y = wall_bottom_pixel; y < WINDOW_HEIGHT; y++) {
-            int idx = (y * WINDOW_WIDTH) + i;
+            int idx = (y * WINDOW_WIDTH) + x;
             color_buffer[idx] = 0xFF777777;
         }
     }
