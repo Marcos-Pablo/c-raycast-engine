@@ -23,7 +23,7 @@ void cast_ray(int strip_id, float ray_angle);
 void cast_all_rays(void);
 void render_rays(void);
 
-float normalize_angle(float angle);
+void normalize_angle(float* angle);
 float distance_between_points(float x1, float y1, float x2, float y2);
 
 #endif
