@@ -10,10 +10,10 @@
 #include "textures.h"
 #include "wall.h"
 
-void setup();
-void render();
-void process_input();
-void update();
+void setup(void);
+void render(void);
+void process_input(void);
+void update(void);
 void release_resources(void);
 
 bool is_game_running = false;
@@ -33,12 +33,12 @@ int main() {
     return EXIT_SUCCESS;
 }
 
-void setup() {
+void setup(void) {
     // Asks uPGN library to decode all PNG files and loads the wall textures array
     load_wall_textures();
 }
 
-void process_input() {
+void process_input(void) {
     SDL_Event event;
     SDL_PollEvent(&event);
 
@@ -95,7 +95,7 @@ void process_input() {
     }
 }
 
-void update() {
+void update(void) {
     // waste some time until we reach the target frame time length
     int time_to_wait = FRAME_TIME_LENGHT - (SDL_GetTicks() - ticks_last_frame);
 
@@ -111,7 +111,7 @@ void update() {
     cast_all_rays();
 }
 
-void render() {
+void render(void) {
     clear_color_buffer(0xFF000000);
     render_wall_projection();
 
