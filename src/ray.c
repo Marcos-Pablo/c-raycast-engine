@@ -1,5 +1,7 @@
 #include "ray.h"
 
+#include "graphics.h"
+
 ray_t rays[NUM_RAYS];
 
 float normalize_angle(float angle) {
@@ -160,17 +162,13 @@ void cast_all_rays() {
 }
 
 void render_rays() {
-    // TODO: Render rays via color buffer
-    /*
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     for (int i = 0; i < NUM_RAYS; i++) {
-        SDL_RenderDrawLine(
-            renderer,
+        draw_line(
             MINIMAP_SCALE_FACTOR * player.x,
             MINIMAP_SCALE_FACTOR * player.y,
             MINIMAP_SCALE_FACTOR * rays[i].wall_hit_x,
-            MINIMAP_SCALE_FACTOR * rays[i].wall_hit_y
+            MINIMAP_SCALE_FACTOR * rays[i].wall_hit_y,
+            0xFF0000FF
         );
     }
-    */
 }

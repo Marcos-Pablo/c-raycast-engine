@@ -172,7 +172,7 @@ void render() {
     render_wall_projection();
 
     render_map();
-    // render_rays();
+    render_rays();
     render_player();
 
     render_color_buffer();

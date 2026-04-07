@@ -12,5 +12,6 @@ void clear_color_buffer(u32 color);
 void render_color_buffer(void);
 void draw_pixel(int x, int y, u32 color);
 void draw_rect(int x, int y, int width, int height, u32 color);
+void draw_line(int x1, int y1, int x2, int y2, u32 color);
 
 #endif
