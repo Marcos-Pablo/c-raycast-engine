@@ -1,6 +1,7 @@
 #ifndef RAY_H
 #define RAY_H
 
+#include <limits.h>
 #include <stdbool.h>
 
 #include "base_defs.h"
