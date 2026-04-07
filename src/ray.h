@@ -26,4 +26,9 @@ void render_rays(void);
 void normalize_angle(float* angle);
 float distance_between_points(float x1, float y1, float x2, float y2);
 
+bool is_ray_facing_up(float angle);
+bool is_ray_facing_down(float angle);
+bool is_ray_facing_left(float angle);
+bool is_ray_facing_right(float angle);
+
 #endif

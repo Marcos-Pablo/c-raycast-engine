@@ -16,14 +16,25 @@ float distance_between_points(float x1, float y1, float x2, float y2) {
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
+bool is_ray_facing_down(float angle) {
+    // In our coordinate system, the ray is facing down if its angle is between 0 and PI radians (180 degrees)
+    return angle > 0 && angle < PI;
+}
+bool is_ray_facing_up(float angle) {
+    // If the ray is not facing down, then it is facing up
+    return !is_ray_facing_down(angle);
+}
+bool is_ray_facing_right(float angle) {
+    // In our coordinate system, the ray is facing right if its angle is between 0 and 90 degrees (0 and PI/2 radians) or between 270 and 360 degrees (3PI/2 and TWO_PI radians)
+    return angle < 0.5 * PI || angle > 1.5 * PI;
+}
+bool is_ray_facing_left(float angle) {
+    // If the ray is not facing right, then it is facing left
+    return !is_ray_facing_right(angle);
+}
+
 void cast_ray(int strip_id, float ray_angle) {
     normalize_angle(&ray_angle);
-
-    bool is_ray_facing_down = ray_angle > 0 && ray_angle < PI;
-    bool is_ray_facing_up = !is_ray_facing_down;
-
-    bool is_ray_facing_right = ray_angle < 0.5 * PI || ray_angle > 1.5 * PI;
-    bool is_ray_facing_left = !is_ray_facing_right;
 
     float yintercept, xintercept;
     float xstep, ystep;
@@ -38,18 +49,18 @@ void cast_ray(int strip_id, float ray_angle) {
 
     // Find the y-coordinate of the closest horizontal grid intersetion
     yintercept = floor(player.y / TILE_SIZE) * TILE_SIZE;
-    yintercept += is_ray_facing_down ? TILE_SIZE : 0;
+    yintercept += is_ray_facing_down(ray_angle) ? TILE_SIZE : 0;
 
     // Find the x-coordinate of the closest horizontal grid intersetion
     xintercept = player.x + (yintercept - player.y) / tan(ray_angle);
 
     // Calculate the increment xstep and ystep
     ystep = TILE_SIZE;
-    ystep *= is_ray_facing_up ? -1 : 1;
+    ystep *= is_ray_facing_up(ray_angle) ? -1 : 1;
 
     xstep = TILE_SIZE / tan(ray_angle);
-    xstep *= (is_ray_facing_left && xstep > 0) ? -1 : 1;
-    xstep *= (is_ray_facing_right && xstep < 0) ? -1 : 1;
+    xstep *= (is_ray_facing_left(ray_angle) && xstep > 0) ? -1 : 1;
+    xstep *= (is_ray_facing_right(ray_angle) && xstep < 0) ? -1 : 1;
 
     float next_horz_touch_x = xintercept;
     float next_horz_touch_y = yintercept;
@@ -57,7 +68,8 @@ void cast_ray(int strip_id, float ray_angle) {
     // Increment x_step and y_step until we find a wall
     while (is_inside_map(next_horz_touch_x, next_horz_touch_y)) {
         float x_to_check = next_horz_touch_x;
-        float y_to_check = next_horz_touch_y + (is_ray_facing_up ? -1 : 0);
+        float y_to_check =
+            next_horz_touch_y + (is_ray_facing_up(ray_angle) ? -1 : 0);
 
         if (has_wall_at(x_to_check, y_to_check)) {
             found_horz_wall_hit = true;
@@ -84,25 +96,26 @@ void cast_ray(int strip_id, float ray_angle) {
 
     // Find the x-coordinate of the closest vertical grid intersetion
     xintercept = floor(player.x / TILE_SIZE) * TILE_SIZE;
-    xintercept += is_ray_facing_right ? TILE_SIZE : 0;
+    xintercept += is_ray_facing_right(ray_angle) ? TILE_SIZE : 0;
 
     // Find the y-coordinate of the closest vertical grid intersetion
     yintercept = player.y + (xintercept - player.x) * tan(ray_angle);
 
     // Calculate the increment xstep and ystep
     xstep = TILE_SIZE;
-    xstep *= is_ray_facing_left ? -1 : 1;
+    xstep *= is_ray_facing_left(ray_angle) ? -1 : 1;
 
     ystep = TILE_SIZE * tan(ray_angle);
-    ystep *= (is_ray_facing_up && ystep > 0) ? -1 : 1;
-    ystep *= (is_ray_facing_down && ystep < 0) ? -1 : 1;
+    ystep *= (is_ray_facing_up(ray_angle) && ystep > 0) ? -1 : 1;
+    ystep *= (is_ray_facing_down(ray_angle) && ystep < 0) ? -1 : 1;
 
     float next_vert_touch_x = xintercept;
     float next_vert_touch_y = yintercept;
 
     // Increment x_step and y_step until we find a wall
     while (is_inside_map(next_vert_touch_x, next_vert_touch_y)) {
-        float x_to_check = next_vert_touch_x + (is_ray_facing_left ? -1 : 0);
+        float x_to_check =
+            next_vert_touch_x + (is_ray_facing_left(ray_angle) ? -1 : 0);
         float y_to_check = next_vert_touch_y;
 
         if (has_wall_at(x_to_check, y_to_check)) {
