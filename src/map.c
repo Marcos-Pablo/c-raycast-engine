@@ -25,7 +25,7 @@ bool has_wall_at(float x, float y) {
     return map[map_y][map_x] != 0;
 }
 
-void render_map() {
+void render_map_grid(void) {
     for (int i = 0; i < MAP_NUM_ROWS; i++) {
         for (int j = 0; j < MAP_NUM_COLS; j++) {
             int tile_x = j * TILE_SIZE;

@@ -4,17 +4,12 @@
 #include "base_defs.h"
 #include "upng.h"
 
-typedef struct {
-    upng_t* upng_texture;
-    int width;
-    int height;
-    color_t* texture_buffer;
-} texture_t;
+#define NUM_TEXTURES 14
 
-texture_t wall_textures[NUM_TEXTURES];
+upng_t* textures[NUM_TEXTURES];
 
-void load_wall_textures();
-void free_wall_textures();
+void load_textures(void);
+void free_textures(void);
 
 void change_color_intensity(color_t* color, float factor);
 

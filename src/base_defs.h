@@ -9,8 +9,6 @@
 
 #define TILE_SIZE 64
 
-#define NUM_TEXTURES 9
-
 #define MINIMAP_SCALE_FACTOR 0.2
 
 #define WINDOW_WIDTH 1920

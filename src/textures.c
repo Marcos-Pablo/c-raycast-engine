@@ -3,39 +3,48 @@
 #include <stdio.h>
 
 static const char* texture_file_names[NUM_TEXTURES] = {
-    "./images/redbrick.png",
-    "./images/purplestone.png",
-    "./images/mossystone.png",
-    "./images/graystone.png",
-    "./images/colorstone.png",
-    "./images/bluestone.png",
-    "./images/wood.png",
-    "./images/eagle.png",
-    "./images/pikuma.png"
+    "./images/redbrick.png",     // [0]
+    "./images/purplestone.png",  // [1]
+    "./images/mossystone.png",   // [2]
+    "./images/graystone.png",    // [3]
+    "./images/colorstone.png",   // [4]
+    "./images/bluestone.png",    // [5]
+    "./images/wood.png",         // [6]
+    "./images/eagle.png",        // [7]
+    "./images/pikuma.png",       // [8]
+    "./images/barrel.png",       // [9]
+    "./images/light.png",        // [10]
+    "./images/table.png",        // [11]
+    "./images/guard.png",        // [12]
+    "./images/armor.png"         // [13]
 };
 
-void load_wall_textures() {
+void load_textures() {
     for (int i = 0; i < NUM_TEXTURES; i++) {
-        upng_t* upng;
+        upng_t* upng = upng_new_from_file(texture_file_names[i]);
 
-        upng = upng_new_from_file(texture_file_names[i]);
-
-        if (upng != NULL) {
-            upng_decode(upng);
-            if (upng_get_error(upng) == UPNG_EOK) {
-                wall_textures[i].upng_texture = upng;
-                wall_textures[i].width = upng_get_width(upng);
-                wall_textures[i].height = upng_get_height(upng);
-                wall_textures[i].texture_buffer =
-                    (color_t*)upng_get_buffer(upng);
-            }
+        if (upng == NULL) {
+            printf(
+                "Error allocating memory for texture: %s\n",
+                texture_file_names[i]
+            );
+            continue;
         }
+
+        upng_decode(upng);
+        if (upng_get_error(upng) != UPNG_EOK) {
+            printf("Error decoding texture file: %s\n", texture_file_names[i]);
+            upng_free(upng);
+            continue;
+        }
+
+        textures[i] = upng;
     }
 }
 
-void free_wall_textures() {
+void free_textures(void) {
     for (int i = 0; i < NUM_TEXTURES; i++) {
-        upng_free(wall_textures[i].upng_texture);
+        upng_free(textures[i]);
     }
 }
 

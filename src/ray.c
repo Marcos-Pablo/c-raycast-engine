@@ -164,7 +164,7 @@ void cast_ray(int strip_id, float ray_angle) {
     rays[strip_id].ray_angle = ray_angle;
 }
 
-void cast_all_rays() {
+void cast_all_rays(void) {
     for (int col = 0; col < NUM_RAYS; col++) {
         float ray_angle = player.rotation_angle +
                           atan((col - NUM_RAYS / 2) / DIST_PROJ_PLANE);
@@ -172,7 +172,7 @@ void cast_all_rays() {
     }
 }
 
-void render_rays() {
+void render_map_rays(void) {
     for (int i = 0; i < NUM_RAYS; i++) {
         draw_line(
             MINIMAP_SCALE_FACTOR * player.x,

@@ -2,23 +2,22 @@
 
 void render_wall_projection(void) {
     for (int x = 0; x < NUM_RAYS; x++) {
+        // Correct the fish-eye distortion by using the perpendicular distance instead of the direct distance to the wall hit
         float perpendicular_distance =
             rays[x].distance * cos(rays[x].ray_angle - player.rotation_angle);
 
-        float projected_wall_height =
+        float wall_height =
             (TILE_SIZE / perpendicular_distance) * DIST_PROJ_PLANE;
 
-        int wall_strip_height = (int)projected_wall_height;
-        int wall_top_pixel = (WINDOW_HEIGHT / 2) - (wall_strip_height / 2);
-        wall_top_pixel = wall_top_pixel < 0 ? 0 : wall_top_pixel;
+        int wall_top_y = (WINDOW_HEIGHT / 2) - (wall_height / 2);
+        wall_top_y = wall_top_y < 0 ? 0 : wall_top_y;
 
-        int wall_bottom_pixel = (WINDOW_HEIGHT / 2) + (wall_strip_height / 2);
-        wall_bottom_pixel = wall_bottom_pixel > WINDOW_HEIGHT
-                                ? WINDOW_HEIGHT
-                                : wall_bottom_pixel;
+        int wall_bottom_y = (WINDOW_HEIGHT / 2) + (wall_height / 2);
+        wall_bottom_y =
+            wall_bottom_y > WINDOW_HEIGHT ? WINDOW_HEIGHT : wall_bottom_y;
 
-        // set the color of the ceiling
-        for (int y = 0; y < wall_top_pixel; y++) {
+        // Draw the ceiling with a solid color
+        for (int y = 0; y < wall_top_y; y++) {
             draw_pixel(x, y, 0xFF333333);
         }
 
@@ -31,19 +30,21 @@ void render_wall_projection(void) {
         }
 
         int tex_num = rays[x].wall_hit_content - 1;
-        int texture_with = wall_textures[tex_num].width;
-        int texture_height = wall_textures[tex_num].height;
+        int texture_width = upng_get_width(textures[tex_num]);
+        int texture_height = upng_get_height(textures[tex_num]);
 
-        for (int y = wall_top_pixel; y < wall_bottom_pixel; y++) {
-            int distance_from_top =
-                y + (wall_strip_height / 2) - (WINDOW_HEIGHT / 2);
+        // Render the wall with the texture mapping
+        for (int y = wall_top_y; y < wall_bottom_y; y++) {
+            int distance_from_top = y + (wall_height / 2) - (WINDOW_HEIGHT / 2);
 
             int texture_offset_y =
-                distance_from_top * ((float)texture_with / wall_strip_height);
+                distance_from_top * ((float)texture_height / wall_height);
 
-            color_t texel_color =
-                wall_textures[tex_num].texture_buffer
-                    [(texture_height * texture_offset_y) + texture_offset_x];
+            color_t* wall_texture_buffer =
+                (color_t*)upng_get_buffer(textures[tex_num]);
+
+            color_t texel_color = wall_texture_buffer
+                [(texture_width * texture_offset_y) + texture_offset_x];
 
             // Make the pixels of the wall that were hit vertically darker to create a shadow effect
             if (rays[x].was_hit_vertical) {
@@ -54,8 +55,8 @@ void render_wall_projection(void) {
             draw_pixel(x, y, texel_color);
         }
 
-        // set the color of the floor
-        for (int y = wall_bottom_pixel; y < WINDOW_HEIGHT; y++) {
+        // Draw the floor with a solid color
+        for (int y = wall_bottom_y; y < WINDOW_HEIGHT; y++) {
             draw_pixel(x, y, 0xFF777777);
         }
     }

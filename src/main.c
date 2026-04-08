@@ -7,6 +7,7 @@
 #include "map.h"
 #include "player.h"
 #include "ray.h"
+#include "sprites.h"
 #include "textures.h"
 #include "wall.h"
 
@@ -35,7 +36,7 @@ int main() {
 
 void setup(void) {
     // Asks uPGN library to decode all PNG files and loads the wall textures array
-    load_wall_textures();
+    load_textures();
 }
 
 void process_input(void) {
@@ -113,16 +114,21 @@ void update(void) {
 
 void render(void) {
     clear_color_buffer(0xFF000000);
-    render_wall_projection();
 
-    render_map();
-    render_rays();
-    render_player();
+    // Render walls and sprites
+    render_wall_projection();
+    render_sprite_projection();
+
+    // Render minimap objects
+    render_map_grid();
+    render_map_rays();
+    render_map_sprites();
+    render_map_player();
 
     render_color_buffer();
 }
 
 void release_resources(void) {
-    free_wall_textures();
+    free_textures();
     destroy_window();
 }
