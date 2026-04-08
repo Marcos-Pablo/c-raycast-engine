@@ -29,7 +29,7 @@ void render_wall_projection(void) {
             texture_offset_x = (int)rays[x].wall_hit_x % TILE_SIZE;
         }
 
-        int tex_num = rays[x].wall_hit_content - 1;
+        int tex_num = rays[x].texture - 1;
         int texture_width = upng_get_width(textures[tex_num]);
         int texture_height = upng_get_height(textures[tex_num]);
 

@@ -89,20 +89,9 @@ void draw_pixel(int x, int y, color_t color) {
 }
 
 void draw_rect(int x, int y, int width, int height, color_t color) {
-    if (x < 0 || x > WINDOW_WIDTH) return;
-    if (y < 0 || y > WINDOW_HEIGHT) return;
-
-    for (int col_offset = 0; col_offset < width; col_offset++) {
-        if (x + col_offset > WINDOW_WIDTH) {
-            break;
-        }
-
-        for (int row_offset = 0; row_offset < height; row_offset++) {
-            if (y + row_offset > WINDOW_HEIGHT) {
-                break;
-            }
-
-            draw_pixel(x + col_offset, y + row_offset, color);
+    for (int i = x; i <= (x + width); i++) {
+        for (int j = y; j <= (y + height); j++) {
+            draw_pixel(i, j, color);
         }
     }
 }

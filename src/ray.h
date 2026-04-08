@@ -7,6 +7,7 @@
 #include "base_defs.h"
 #include "map.h"
 #include "player.h"
+#include "utils.h"
 
 typedef struct Ray {
     float ray_angle;
@@ -14,7 +15,7 @@ typedef struct Ray {
     float wall_hit_y;
     float distance;
     bool was_hit_vertical;
-    int wall_hit_content;
+    int texture;
 } ray_t;
 
 extern ray_t rays[NUM_RAYS];
@@ -22,9 +23,6 @@ extern ray_t rays[NUM_RAYS];
 void cast_ray(int strip_id, float ray_angle);
 void cast_all_rays(void);
 void render_map_rays(void);
-
-void normalize_angle(float* angle);
-float distance_between_points(float x1, float y1, float x2, float y2);
 
 bool is_ray_facing_up(float angle);
 bool is_ray_facing_down(float angle);

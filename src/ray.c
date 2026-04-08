@@ -4,18 +4,6 @@
 
 ray_t rays[NUM_RAYS];
 
-void normalize_angle(float* angle) {
-    *angle = remainder(*angle, TWO_PI);
-
-    if (*angle < 0) {
-        *angle += TWO_PI;
-    }
-}
-
-float distance_between_points(float x1, float y1, float x2, float y2) {
-    return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-}
-
 bool is_ray_facing_down(float angle) {
     // In our coordinate system, the ray is facing down if its angle is between 0 and PI radians (180 degrees)
     return angle > 0 && angle < PI;
@@ -45,7 +33,7 @@ void cast_ray(int strip_id, float ray_angle) {
     bool found_horz_wall_hit = false;
     float horz_wall_hit_x = 0;
     float horz_wall_hit_y = 0;
-    int horz_wall_content = 0;
+    int horz_wall_texture = 0;
 
     // Find the y-coordinate of the closest horizontal grid intersetion
     yintercept = floor(player.y / TILE_SIZE) * TILE_SIZE;
@@ -75,7 +63,7 @@ void cast_ray(int strip_id, float ray_angle) {
             found_horz_wall_hit = true;
             horz_wall_hit_x = next_horz_touch_x;
             horz_wall_hit_y = next_horz_touch_y;
-            horz_wall_content = get_map_at(
+            horz_wall_texture = get_map_at(
                 (int)floor(y_to_check / TILE_SIZE),
                 (int)floor(x_to_check / TILE_SIZE)
             );
@@ -92,7 +80,7 @@ void cast_ray(int strip_id, float ray_angle) {
     bool found_vert_wall_hit = false;
     float vert_wall_hit_x = 0;
     float vert_wall_hit_y = 0;
-    int vert_wall_content = 0;
+    int vert_wall_texture = 0;
 
     // Find the x-coordinate of the closest vertical grid intersetion
     xintercept = floor(player.x / TILE_SIZE) * TILE_SIZE;
@@ -122,7 +110,7 @@ void cast_ray(int strip_id, float ray_angle) {
             found_vert_wall_hit = true;
             vert_wall_hit_x = next_vert_touch_x;
             vert_wall_hit_y = next_vert_touch_y;
-            vert_wall_content = get_map_at(
+            vert_wall_texture = get_map_at(
                 (int)floor(y_to_check / TILE_SIZE),
                 (int)floor(x_to_check / TILE_SIZE)
             );
@@ -151,13 +139,13 @@ void cast_ray(int strip_id, float ray_angle) {
         rays[strip_id].distance = vert_hit_distance;
         rays[strip_id].wall_hit_x = vert_wall_hit_x;
         rays[strip_id].wall_hit_y = vert_wall_hit_y;
-        rays[strip_id].wall_hit_content = vert_wall_content;
+        rays[strip_id].texture = vert_wall_texture;
         rays[strip_id].was_hit_vertical = true;
     } else {
         rays[strip_id].distance = horz_hit_distance;
         rays[strip_id].wall_hit_x = horz_wall_hit_x;
         rays[strip_id].wall_hit_y = horz_wall_hit_y;
-        rays[strip_id].wall_hit_content = horz_wall_content;
+        rays[strip_id].texture = horz_wall_texture;
         rays[strip_id].was_hit_vertical = false;
     }
 
